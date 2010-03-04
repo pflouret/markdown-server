@@ -1,0 +1,73 @@
+#!/usr/bin/env ruby
+
+require 'rubygems' rescue nil
+
+require 'optparse'
+require 'rdiscount'
+
+module MarkdownServer
+   VERSION = "0.1"
+end
+
+help = <<HELP
+A simple server that runs files through markdown before serving them.
+
+#{$0} [-p|--port PORT] [--version] [-h] [DIRECTORY]
+
+HELP
+
+options = {:port => 8000}
+
+opts = OptionParser.new do |opts|
+  opts.banner = help
+
+  opts.on("--port PORT", "server port (default 8000)") do |port|
+    options[:port] = port unless port.nil?
+  end
+
+  opts.on("--version", "Display current version") do
+    puts "#{$0}" + MarkdownServer::VERSION
+    exit 0
+  end
+end
+
+opts.parse!
+
+require 'webrick'
+include WEBrick
+
+class MarkdownizerFileHandler < HTTPServlet::FileHandler
+  def do_GET(req, res)
+     unless exec_handler(req, res)
+        return set_dir_list(req, res)
+     end
+
+     res.body = RDiscount.new(res.body.read).to_html
+  end
+end
+
+def create_server(err, dir, port)
+   dir = File.expand_path(dir)
+   err.puts "server in http://#{Socket.gethostname}:#{port} docroot in #{File.expand_path(dir)}"
+
+   s = HTTPServer.new(
+      :Port         => port,
+      :Logger       => WEBrick::Log.new(err),
+      :AccessLog    => [[ err, WEBrick::AccessLog::COMMON_LOG_FORMAT  ],
+                        [ err, WEBrick::AccessLog::REFERER_LOG_FORMAT ],
+                        [ err, WEBrick::AccessLog::AGENT_LOG_FORMAT   ]]
+   )
+   s.mount("/", MarkdownizerFileHandler, dir, :FancyIndexing=>true)
+   s
+end
+
+s = create_server(STDERR, ARGV[0] || ".", options[:port])
+t = Thread.new { s.start }
+
+trap(:INT) do
+   s.shutdown
+   t.join
+   exit
+end
+sleep
+
