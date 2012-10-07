@@ -8,7 +8,7 @@ Requirements
 ------------
 
 * ruby
-* rdiscount
+* kramdown
 
 
 Installation
@@ -16,6 +16,10 @@ Installation
 
     $ sudo gem install markdown-server
 
+Usage
+-----
+
+    $ markdown-server [-p|--port PORT] [--version] [-h] [DIRECTORY]
 
 License
 -------
