@@ -42,7 +42,14 @@ class MarkdownizerFileHandler < HTTPServlet::FileHandler
         return set_dir_list(req, res)
      end
 
-     res.body = RDiscount.new(res.body.read).to_html
+     body = res.body.read
+     html = RDiscount.new(body).to_html
+
+     res['Content-Type'] = "text/html"
+     res.body = html
+     res.content_length = html.length
+
+     raise HTTPStatus::OK
   end
 end
 
