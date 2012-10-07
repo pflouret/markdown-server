@@ -10,7 +10,7 @@ begin
    Jeweler::Tasks.new do |s|
       s.name = 'markdown-server'
       s.version = '0.1.2'
-      s.date = Time.now.to_s
+      s.date = Time.now.strftime("%F")
       s.summary = "A simple server that runs files through markdown before serving them."
       s.description = s.summary
       s.executables = ['markdown-server']
