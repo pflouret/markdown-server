@@ -55,7 +55,8 @@ end
 
 def create_server(err, dir, port)
    dir = File.expand_path(dir)
-   err.puts "server in http://#{Socket.gethostname}:#{port} docroot in #{File.expand_path(dir)}"
+   start_msg = "server in http://#{Socket.gethostname}:#{port} docroot in #{File.expand_path(dir)}"
+   err.puts "\n#{start_msg}\n\n"
 
    s = HTTPServer.new(
       :Port         => port,
