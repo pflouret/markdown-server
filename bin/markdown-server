@@ -1,9 +1,10 @@
 #!/usr/bin/env ruby
+# encoding: UTF-8
 
 require 'rubygems' rescue nil
 
 require 'optparse'
-require 'rdiscount'
+require 'kramdown'
 
 module MarkdownServer
    VERSION = "0.1"
@@ -38,17 +39,30 @@ include WEBrick
 
 class MarkdownizerFileHandler < HTTPServlet::FileHandler
   def do_GET(req, res)
-     unless exec_handler(req, res)
-        return set_dir_list(req, res)
-     end
+    unless exec_handler(req, res)
+      return set_dir_list(req, res)
+    end
 
-     res.body = RDiscount.new(res.body.read).to_html
+    f = File.open(res.body)
+    body = f.read
+    # make the body ASCII-safe, by encoding everything above 0x7F
+    html = Kramdown::Document.new(body,
+             :smart_quotes => ["apos", "apos", "quot", "quot"]
+           ).to_html
+    html.gsub!(/\P{ASCII}/){ "&##{$&.unpack('U').first};" }
+
+    res['Content-Type'] = "text/html"
+    res.body = html
+    res.content_length = html.length
+
+    raise HTTPStatus::OK
   end
 end
 
 def create_server(err, dir, port)
    dir = File.expand_path(dir)
-   err.puts "server in http://#{Socket.gethostname}:#{port} docroot in #{File.expand_path(dir)}"
+   start_msg = "server in http://#{Socket.gethostname}:#{port} docroot in #{File.expand_path(dir)}"
+   err.puts "\n#{start_msg}\n\n"
 
    s = HTTPServer.new(
       :Port         => port,
