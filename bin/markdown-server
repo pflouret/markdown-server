@@ -52,6 +52,7 @@ class MarkdownizerFileHandler < HTTPServlet::FileHandler
     html.gsub!(/\P{ASCII}/){ "&##{$&.unpack('U').first};" }
 
     res['Content-Type'] = "text/html"
+    res['Content-Disposition'] = "inline"
     res.body = html
     res.content_length = html.length
 
