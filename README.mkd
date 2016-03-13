@@ -1,6 +1,8 @@
 markdown-server
 ===============
 
+[![Gem Version](https://badge.fury.io/rb/markdown-server.svg)](https://rubygems.org/gems/markdown-server)
+
 A very simple server that runs files through markdown before serving them.
 
 
